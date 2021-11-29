@@ -12,10 +12,6 @@ from django.http import HttpResponse
 from accounts.api.serializers import UserSerializer, LoginSerializer, SignupSerializer
 
 
-def index(request):
-    return HttpResponse()
-
-
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
