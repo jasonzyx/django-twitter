@@ -15,6 +15,7 @@ from accounts.api.serializers import UserSerializer, LoginSerializer, SignupSeri
 def index(request):
     return HttpResponse()
 
+
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
