@@ -7,9 +7,13 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from django.http import HttpResponse
 
 from accounts.api.serializers import UserSerializer, LoginSerializer, SignupSerializer
 
+
+def index(request):
+    return HttpResponse()
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
