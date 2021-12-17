@@ -35,11 +35,11 @@ class FriendshipSerializerForCreate(serializers.ModelSerializer):
 
     def validate(self, data):
         if not User.objects.filter(id=data['to_user_id']).exists():
-            return ValidationError({
+            raise ValidationError({
                 'message': 'user does not seem to exist'
             })
         if data['from_user_id'] == data['to_user_id']:
-            return ValidationError({
+            raise ValidationError({
                 'message': 'users cannot follow themselves'
             })
         return data
