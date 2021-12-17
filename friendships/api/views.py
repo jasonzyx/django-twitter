@@ -25,7 +25,7 @@ class FriendshipViewSet(viewsets.ViewSet):
         friendships = Friendship.objects.filter(from_user_id=pk).order_by('-created_at')
         serializer = FollowingSerializer(friendships, many=True)
         return Response({
-            'following': serializer.data
+            'followings': serializer.data
         }, status=status.HTTP_200_OK)
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
