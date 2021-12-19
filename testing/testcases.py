@@ -13,13 +13,6 @@ class TestCase(DjangoTestCase):
         self.__anonymous_client = APIClient()
         return self.__anonymous_client
 
-    # @property
-    # def anonymous_client(self):
-    #     if hasattr(self, '_anonymous_client'):
-    #         return self._anonymous_client
-    #     self._anonymous_client = APIClient()
-    #     return self._anonymous_client
-
     def create_user(self, username, email=None, password=None):
         if email is None:
             email = '{}@jiuzhang.com'.format(username)
