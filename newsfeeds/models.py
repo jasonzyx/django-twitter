@@ -19,7 +19,7 @@ class NewsFeed(models.Model):
     class Meta:
         index_together = (('user', 'created_at'),)
         unique_together = (('user', 'tweet'),)
-        ordering = (('user', '-created_at'),)
+        ordering = ('user', '-created_at')
 
     def __str__(self):
         return f'{self.created_at} tweet shown to {self.user}: {self.tweet}'
