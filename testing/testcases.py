@@ -1,9 +1,17 @@
-from django.test import TestCase as DjangoTestCase
 from django.contrib.auth.models import User
+from django.test import TestCase as DjangoTestCase
+from rest_framework.test import APIClient
+
 from tweets.models import Tweet
 
 
 class TestCase(DjangoTestCase):
+    @property
+    def anonymous_client(self):
+        if hasattr(self, '__anonymous_client'):
+            return self.__anonymous_client
+        self.__anonymous_client = APIClient()
+        return self.__anonymous_client
 
     def create_user(self, username, email=None, password=None):
         if email is None:
