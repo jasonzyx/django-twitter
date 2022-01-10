@@ -1,14 +1,15 @@
-from comments.api.permissions import IsObjectOwner
-
 from rest_framework import viewsets, status
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from comments.models import Comment
+from rest_framework.response import Response
+from utils.decorators import required_params
+
+from comments.api.permissions import IsObjectOwner
 from comments.api.serializers import (
     CommentSerializer,
     CommentSerializerForCreate,
     CommentSerializerForUpdate,
 )
+from comments.models import Comment
 
 
 class CommentViewSet(viewsets.GenericViewSet):
@@ -29,15 +30,8 @@ class CommentViewSet(viewsets.GenericViewSet):
             return [IsAuthenticated(), IsObjectOwner()]
         return [AllowAny()]
 
+    @required_params(params=['tweet_id'])
     def list(self, request, *args, **kwargs):
-        if 'tweet_id' not in request.query_params:
-            return Response(
-                {
-                    'message': 'missing tweet_id in request',
-                    'success': False,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
         queryset = self.get_queryset()
         comments = self.filter_queryset(queryset).order_by('created_at')
         serializer = CommentSerializer(comments, many=True)
