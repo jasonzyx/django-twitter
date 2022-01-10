@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '0@boj+=b&g+=+5o=id&8p5pz=lkd(sgicwnenf34u)#@ma&if1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1', '192.168.33.10', 'localhost']  # VM/docker address
 INTERNAL_IPS = ['172.17.0.1']  # host address
@@ -138,7 +138,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
-try:
-    from .local_settings import *
-except:
-    pass
+# try:
+#     from .local_settings import *
+# except:
+#     pass
