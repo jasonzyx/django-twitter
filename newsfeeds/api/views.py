@@ -13,7 +13,11 @@ class NewsFeedViewSet(viewsets.ViewSet):
         newsfeeds = NewsFeed.objects.filter(
             user=request.user
         ).order_by('-created_at')
-        serializer = NewsFeedSerializer(newsfeeds, many=True)
+        serializer = NewsFeedSerializer(
+            newsfeeds,
+            context={'request': request},
+            many=True,
+        )
         return Response({
             'newsfeeds': serializer.data
         }, status=status.HTTP_200_OK)
