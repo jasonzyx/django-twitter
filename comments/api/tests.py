@@ -3,7 +3,7 @@ from rest_framework.test import APIClient
 
 from comments.models import Comment
 from testing.testcases import TestCase
-
+from inbox.services import NotificationService
 
 COMMENT_URL = '/api/comments/'
 TWEET_LIST_API = '/api/tweets/'

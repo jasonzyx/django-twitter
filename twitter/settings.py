@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     # rest frameworks
     'rest_framework',
     'django_filters',
+    'notifications',
     # project apps
     'accounts',
     'debug_toolbar',
