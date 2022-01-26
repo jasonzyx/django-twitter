@@ -1,6 +1,9 @@
 from django.contrib.auth.models import User
 from tweets.models import Tweet
 from datetime import timedelta
+from testing.testcases import TestCase
+from tweets.constants import TweetPhotoStatus
+from tweets.models import TweetPhoto
 from utils.time_helpers import utc_now
 from testing.testcases import TestCase
 
@@ -27,3 +30,13 @@ class TweetTests(TestCase):
         dongxie = self.create_user('dongxie')
         self.create_like(dongxie, self.tweet)
         self.assertEqual(self.tweet.like_set.count(), 2)
+
+    def test_create_photo(self):
+        # 测试可以成功创建 photo 的数据对象
+        photo = TweetPhoto.objects.create(
+            tweet=self.tweet,
+            user=self.linghu,
+        )
+        self.assertEqual(photo.user, self.linghu)
+        self.assertEqual(photo.status, TweetPhotoStatus.PENDING)
+        self.assertEqual(self.tweet.tweetphoto_set.count(), 1)
