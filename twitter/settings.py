@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '0@boj+=b&g+=+5o=id&8p5pz=lkd(sgicwnenf34u)#@ma&if1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', '192.168.33.10', 'localhost']  # VM/docker address
 INTERNAL_IPS = ['172.17.0.1']  # host address
@@ -148,15 +148,13 @@ if TESTING:
 
 # 当用s3boto3 作为用户上传文件存储时，需要按照你在 AWS 上创建的配置来设置你的 BUCKET_NAME
 # 和 REGION_NAME，这个值你可以改成你自己创建的 bucket 的名字和所在的 region
-AWS_STORAGE_BUCKET_NAME = 'django-twitter'
-AWS_S3_REGION_NAME = 'us-west-1'
+AWS_STORAGE_BUCKET_NAME = 'django-twitter-xtech'
+AWS_S3_REGION_NAME = 'us-east-2'
 
 # 你还需要在 local_settings.py 中设置你的 AWS_ACCESS_KEY_ID 和 AWS_SECRET_ACCESS_KEY
 # 因为这是比较机密的信息，是不适合放在 settings.py 这种共享的配置文件中共享给所有开发者的
 # 真实的开发场景下，可以使用 local_settings.py 的方式，或者设置在环境变量里的方式
 # 这样这些机密信息就可以只被负责运维的核心开发人员掌控，而非所有开发者，降低泄露风险
-# AWS_ACCESS_KEY_ID = 'YOUR_ACCESS_KEY_ID'
-# AWS_SECRET_ACCESS_KEY = 'YOUR_SECRET_ACCESS_KEY'
 
 
 # media 的作用适用于存放被用户上传的文件信息
