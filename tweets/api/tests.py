@@ -2,7 +2,6 @@ from rest_framework.test import APIClient
 from testing.testcases import TestCase
 from tweets.models import Tweet
 
-
 # 注意要加 '/' 结尾，要不然会产生 301 redirect
 TWEET_LIST_API = '/api/tweets/'
 TWEET_CREATE_API = '/api/tweets/'
@@ -84,3 +83,10 @@ class TweetApiTests(TestCase):
         self.create_comment(self.user1, tweet, 'hmm...')
         response = self.anonymous_client.get(url)
         self.assertEqual(len(response.data['comments']), 2)
+
+        # tweet 里包含用户的头像和昵称
+        profile = self.user1.profile
+        print("response.data['user']: ")
+        print(response.data['user'])
+        self.assertEqual(response.data['user']['nickname'], profile.nickname)
+        self.assertEqual(response.data['user']['avatar_url'], None)
