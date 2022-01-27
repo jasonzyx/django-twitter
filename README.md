@@ -1,2 +1,2 @@
-# twitter-term-1
-第一期课程专用 Repo
+# twitter-django
+repo to develop twitter with django
