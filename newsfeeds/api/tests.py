@@ -1,64 +1,121 @@
 from rest_framework import status
 from rest_framework.test import APIClient
-
+from utils.paginations import EndlessPagination
 from testing.testcases import TestCase
-
+from newsfeeds.models import NewsFeed
 
 NewsFeed_LIST_API = '/api/newsfeeds/'
 FOLLOW_URL = '/api/friendships/{}/follow/'
 TWEET_CREATE_API = '/api/tweets/'
+NEWSFEEDS_URL = '/api/newsfeeds/'
 
 
 class NewsFeedApiTests(TestCase):
 
     def setUp(self):
-        self.user1 = self.create_user('user1', 'user1@jiuzhang.com')
-        self.user1_client = APIClient()
-        self.user1_client.force_authenticate(self.user1)
+        self.linghu = self.create_user('linghu', 'linghu@jiuzhang.com')
+        self.linghu_client = APIClient()
+        self.linghu_client.force_authenticate(self.linghu)
 
-        self.user2 = self.create_user('user2', 'user2@jiuzhang.com')
-        self.user2_client = APIClient()
-        self.user2_client.force_authenticate(self.user2)
+        self.dongxie = self.create_user('dongxie', 'dongxie@jiuzhang.com')
+        self.dongxie_client = APIClient()
+        self.dongxie_client.force_authenticate(self.dongxie)
 
     def test_list_api(self):
         # 必须带 authenticate
         response = self.anonymous_client.get(NewsFeed_LIST_API)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-        # user2 follow user1
-        url = FOLLOW_URL.format(self.user1.id)
-        response = self.user2_client.post(url)
+        # dongxie follow linghu
+        url = FOLLOW_URL.format(self.linghu.id)
+        response = self.dongxie_client.post(url)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        # user1 post a new tweet
-        self.user1_client.post(TWEET_CREATE_API, {
-            'content': 'Hello World, this is a 1st tweet from user1!'
+        # linghu post a new tweet
+        self.linghu_client.post(TWEET_CREATE_API, {
+            'content': 'Hello World, this is a 1st tweet from linghu!'
         })
-        self.user1_client.post(TWEET_CREATE_API, {
-            'content': 'Hello World, this is a 2nd tweet from user1!'
+        self.linghu_client.post(TWEET_CREATE_API, {
+            'content': 'Hello World, this is a 2nd tweet from linghu!'
         })
-        self.user2_client.post(TWEET_CREATE_API, {
-            'content': 'Hello World, this is a tweet from user2!'
+        self.dongxie_client.post(TWEET_CREATE_API, {
+            'content': 'Hello World, this is a tweet from dongxie!'
         })
-        # check user2's newsfeed
-        response = self.user2_client.get(NewsFeed_LIST_API)
+        # check dongxie's newsfeed
+        response = self.dongxie_client.get(NewsFeed_LIST_API)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['newsfeeds']), 3)
+        self.assertEqual(len(response.data['results']), 3)
         # make sure it's descending order on creation time
-        ts0 = response.data['newsfeeds'][0]['created_at']
-        ts1 = response.data['newsfeeds'][1]['created_at']
-        ts2 = response.data['newsfeeds'][2]['created_at']
+        ts0 = response.data['results'][0]['created_at']
+        ts1 = response.data['results'][1]['created_at']
+        ts2 = response.data['results'][2]['created_at']
         self.assertEqual(ts0 > ts1, True)
         self.assertEqual(ts1 > ts2, True)
         self.assertEqual(
-            response.data['newsfeeds'][0]['tweet']['content'],
-            'Hello World, this is a tweet from user2!'
+            response.data['results'][0]['tweet']['content'],
+            'Hello World, this is a tweet from dongxie!'
         )
         self.assertEqual(
-            response.data['newsfeeds'][1]['tweet']['content'],
-            'Hello World, this is a 2nd tweet from user1!'
+            response.data['results'][1]['tweet']['content'],
+            'Hello World, this is a 2nd tweet from linghu!'
         )
         self.assertEqual(
-            response.data['newsfeeds'][2]['tweet']['content'],
-            'Hello World, this is a 1st tweet from user1!'
+            response.data['results'][2]['tweet']['content'],
+            'Hello World, this is a 1st tweet from linghu!'
         )
+
+    def test_pagination(self):
+        page_size = EndlessPagination.page_size
+        followed_user = self.create_user('followed')
+        newsfeeds = []
+        for i in range(page_size * 2):
+            tweet = self.create_tweet(followed_user)
+            newsfeed = self.create_newsfeed(user=self.linghu, tweet=tweet)
+            newsfeeds.append(newsfeed)
+
+        newsfeeds = newsfeeds[::-1]
+
+        # pull the first page
+        response = self.linghu_client.get(NEWSFEEDS_URL)
+        self.assertEqual(response.data['has_next_page'], True)
+        self.assertEqual(len(response.data['results']), page_size)
+        self.assertEqual(response.data['results'][0]['id'], newsfeeds[0].id)
+        self.assertEqual(response.data['results'][1]['id'], newsfeeds[1].id)
+        self.assertEqual(
+            response.data['results'][page_size - 1]['id'],
+            newsfeeds[page_size - 1].id,
+        )
+
+        # pull the second page
+        response = self.linghu_client.get(
+            NEWSFEEDS_URL,
+            {'created_at__lt': newsfeeds[page_size - 1].created_at},
+        )
+        self.assertEqual(response.data['has_next_page'], False)
+        results = response.data['results']
+        self.assertEqual(len(results), page_size)
+        self.assertEqual(results[0]['id'], newsfeeds[page_size].id)
+        self.assertEqual(results[1]['id'], newsfeeds[page_size + 1].id)
+        self.assertEqual(
+            results[page_size - 1]['id'],
+            newsfeeds[2 * page_size - 1].id,
+        )
+
+        # pull latest newsfeeds
+        response = self.linghu_client.get(
+            NEWSFEEDS_URL,
+            {'created_at__gt': newsfeeds[0].created_at},
+        )
+        self.assertEqual(response.data['has_next_page'], False)
+        self.assertEqual(len(response.data['results']), 0)
+
+        tweet = self.create_tweet(followed_user)
+        new_newsfeed = self.create_newsfeed(user=self.linghu, tweet=tweet)
+
+        response = self.linghu_client.get(
+            NEWSFEEDS_URL,
+            {'created_at__gt': newsfeeds[0].created_at},
+        )
+        self.assertEqual(response.data['has_next_page'], False)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['id'], new_newsfeed.id)
