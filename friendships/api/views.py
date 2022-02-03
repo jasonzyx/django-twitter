@@ -52,7 +52,6 @@ class FriendshipViewSet(viewsets.GenericViewSet):
                 'errors': serializer.errors,
             }, status=400)
         serializer.save()
-        FriendshipService.invalidate_following_cache(request.user.id)
         return Response({'success': True}, status.HTTP_201_CREATED)
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
@@ -70,7 +69,6 @@ class FriendshipViewSet(viewsets.GenericViewSet):
         deleted, _ = Friendship.objects.filter(
             from_user_id=request.user.id,
             to_user_id=pk).delete()
-        FriendshipService.invalidate_following_cache(request.user.id)
         return Response({'success': True, 'deleted': deleted}, status=status.HTTP_200_OK)
 
 
