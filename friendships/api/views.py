@@ -6,6 +6,7 @@ from friendships.api.serializers import (
     FriendshipSerializerForCreate,
 )
 from friendships.models import Friendship
+from friendships.services import FriendshipService
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -51,6 +52,7 @@ class FriendshipViewSet(viewsets.GenericViewSet):
                 'errors': serializer.errors,
             }, status=400)
         serializer.save()
+        FriendshipService.invalidate_following_cache(request.user.id)
         return Response({'success': True}, status.HTTP_201_CREATED)
 
     @action(methods=['POST'], detail=True, permission_classes=[IsAuthenticated])
@@ -68,6 +70,7 @@ class FriendshipViewSet(viewsets.GenericViewSet):
         deleted, _ = Friendship.objects.filter(
             from_user_id=request.user.id,
             to_user_id=pk).delete()
+        FriendshipService.invalidate_following_cache(request.user.id)
         return Response({'success': True, 'deleted': deleted}, status=status.HTTP_200_OK)
 
 
