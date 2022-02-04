@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
+from tweets.services import TweetService
 from newsfeeds.services import NewsFeedService
 from tweets.api.serializers import (
     TweetSerializer,
@@ -38,9 +38,7 @@ class TweetViewSet(viewsets.GenericViewSet):
         """
         Override the list method
         """
-        tweets = Tweet.objects.filter(
-            user_id=request.query_params['user_id']
-        ).order_by('-created_at')
+        tweets = TweetService.get_cached_tweets(user_id=request.query_params['user_id'])
         tweets = self.paginate_queryset(tweets)
         serializer = TweetSerializer(
             tweets,
