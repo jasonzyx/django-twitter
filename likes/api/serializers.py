@@ -51,6 +51,7 @@ class LikeSerializerForCreate(BaseLikeSerializerForCreateAndCancel):
             user=self.context['request'].user,
         )
 
+
 class LikeSerializerForCancel(BaseLikeSerializerForCreateAndCancel):
 
     def cancel(self):
