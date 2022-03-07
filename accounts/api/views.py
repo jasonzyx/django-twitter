@@ -1,6 +1,8 @@
 from django.contrib.auth import authenticate as django_authenticate
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
+from django.utils.decorators import method_decorator
+from ratelimit.decorators import ratelimit
 from django.contrib.auth.models import User
 from rest_framework import permissions
 from rest_framework import viewsets
@@ -31,6 +33,7 @@ class AccountViewSet(viewsets.ViewSet):
     serializer_class = SignupSerializer
 
     @action(methods=['GET'], detail=False)
+    @method_decorator(ratelimit(key='ip', rate='3/s', method='GET', block=True))
     def login_status(self, request):
         data = {
             'has_logged_in': request.user.is_authenticated,
@@ -41,31 +44,7 @@ class AccountViewSet(viewsets.ViewSet):
         return Response(data)
 
     @action(methods=['POST'], detail=False)
-    def logout(self, request):
-        django_logout(request)
-        return Response({'success: True'})
-
-    @action(methods=['POST'], detail=False)
-    def signup(self, request):
-        serializer = SignupSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response({
-                'success': False,
-                'message': "Please check input",
-                'errors': serializer.errors,
-            }, status=400)
-
-        user = serializer.save()
-        # Create UserProfile object
-        user.profile
-
-        django_login(request, user)
-        return Response({
-            'success': True,
-            'user': UserSerializer(user).data
-        }, status=201)
-
-    @action(methods=['POST'], detail=False)
+    @method_decorator(ratelimit(key='ip', rate='3/s', method='POST', block=True))
     def login(self, request):
         serializer = LoginSerializer(data=request.data)
         if not serializer.is_valid():
@@ -96,6 +75,32 @@ class AccountViewSet(viewsets.ViewSet):
             'success': True,
             'user': UserSerializer(user).data
         })
+
+    @action(methods=['POST'], detail=False)
+    @method_decorator(ratelimit(key='ip', rate='3/s', method='POST', block=True))
+    def logout(self, request):
+        django_logout(request)
+        return Response({'success: True'})
+
+    @action(methods=['POST'], detail=False)
+    def signup(self, request):
+        serializer = SignupSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({
+                'success': False,
+                'message': "Please check input",
+                'errors': serializer.errors,
+            }, status=400)
+
+        user = serializer.save()
+        # Create UserProfile object
+        user.profile
+
+        django_login(request, user)
+        return Response({
+            'success': True,
+            'user': UserSerializer(user).data
+        }, status=201)
 
 
 class UserProfileViewSet(
