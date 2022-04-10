@@ -12,7 +12,7 @@ TWEET_RETRIEVE_API = '/api/tweets/{}/'
 class TweetApiTests(TestCase):
 
     def setUp(self):
-        self.clear_cache()
+        super(TweetApiTests, self).setUp()
         self.linghu = self.create_user('linghu', 'linghu@jiuzhang.com')
         self.tweets1 = [
             self.create_tweet(self.linghu)
