@@ -8,7 +8,8 @@ from utils.redis_client import RedisClient
 from friendships.services import FriendshipService
 from comments.models import Comment
 from likes.models import Like
-from newsfeeds.models import NewsFeed
+from newsfeeds.services import NewsFeedService
+from gatekeeper.models import GateKeeper
 from tweets.models import Tweet
 
 
@@ -34,6 +35,8 @@ class TestCase(DjangoTestCase):
     def clear_cache(self):
         RedisClient.clear()
         caches['testing'].clear()
+        GateKeeper.turn_on('switch_newsfeed_to_hbase')
+        GateKeeper.turn_on('switch_friendship_to_hbase')
 
     @property
     def anonymous_client(self):
@@ -80,4 +83,8 @@ class TestCase(DjangoTestCase):
         return user, client
 
     def create_newsfeed(self, user, tweet):
-        return NewsFeed.objects.create(user=user, tweet=tweet)
+        if GateKeeper.is_switch_on('switch_newsfeed_to_hbase'):
+            created_at = tweet.timestamp
+        else:
+            created_at = tweet.created_at
+        return NewsFeedService.create(user_id=user.id, tweet_id=tweet.id, created_at=created_at)
